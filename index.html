@@ -1,0 +1,150 @@
+
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>מעקב קלוריות מתקדם</title>
+<style>
+body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f4f7fb;margin:0;padding:15px}
+.card{background:white;border-radius:16px;padding:15px;margin-bottom:14px;box-shadow:0 5px 20px rgba(0,0,0,0.08)}
+h1{margin:0 0 10px}
+button{padding:10px;border:none;border-radius:10px;font-size:16px;margin:4px}
+.primary{background:#2563eb;color:white}
+.quick{background:#eef2ff}
+.stat{font-size:28px;font-weight:bold}
+.progress{height:12px;background:#ddd;border-radius:10px;overflow:hidden;margin-top:6px}
+.bar{height:100%;background:#2563eb;width:0%}
+.waterbar{background:#06b6d4}
+input,select{padding:8px;border-radius:10px;border:1px solid #ddd;font-size:16px;margin:4px}
+.quickGrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+svg{width:100%;height:160px}
+</style>
+</head>
+<body>
+
+<div class="card">
+<h1>מעקב יומי</h1>
+יעד קלוריות:
+<input id="goal" type="number" value="1700">
+</div>
+
+<div class="card">
+<div>קלוריות היום</div>
+<div id="total" class="stat">0</div>
+<div class="progress"><div id="calbar" class="bar"></div></div>
+</div>
+
+<div class="card">
+<h3>הוספה ידנית</h3>
+<select id="food">
+<option value="220">דג</option>
+<option value="250">עוף</option>
+<option value="320">שניצל</option>
+<option value="200">אורז</option>
+<option value="220">קוסקוס</option>
+<option value="350">ציפס</option>
+<option value="50">סלט</option>
+<option value="50">נס קפה סויה</option>
+<option value="122">קינדר בואנו</option>
+<option value="230">עוגה בחושה</option>
+</select>
+
+<select id="qty">
+<option value="1">1</option>
+<option value="2">2</option>
+<option value="0.5">0.5</option>
+</select>
+
+<button class="primary" onclick="addFood()">הוסף</button>
+</div>
+
+<div class="card">
+<h3>כפתורים מהירים</h3>
+<div class="quickGrid">
+<button class="quick" onclick="quickAdd(50)">☕ נס קפה</button>
+<button class="quick" onclick="quickAdd(122)">🍫 קינדר</button>
+<button class="quick" onclick="quickAdd(230)">🍰 עוגה</button>
+<button class="quick" onclick="quickAdd(220)">🐟 דג</button>
+<button class="quick" onclick="quickAdd(250)">🍗 עוף</button>
+<button class="quick" onclick="quickAdd(200)">🍚 אורז</button>
+</div>
+</div>
+
+<div class="card">
+<h3>מים</h3>
+<button onclick="addWater(0.5)">+0.5 ל'</button>
+<button onclick="addWater(1)">+1 ל'</button>
+<div id="water">0 ל'</div>
+<div class="progress"><div id="waterbar" class="bar waterbar"></div></div>
+</div>
+
+<div class="card">
+<h3>משקל</h3>
+<input id="weight" type="number" placeholder="הכנס משקל">
+<button onclick="saveWeight()">שמור</button>
+<svg id="chart"></svg>
+</div>
+
+<script>
+let calories=0
+let water=0
+let weights=JSON.parse(localStorage.getItem("weights")||"[]")
+
+function update(){
+document.getElementById("total").innerText=Math.round(calories)
+let goal=document.getElementById("goal").value
+document.getElementById("calbar").style.width=Math.min((calories/goal)*100,100)+"%"
+}
+
+function addFood(){
+let cal=document.getElementById("food").value
+let qty=document.getElementById("qty").value
+calories+=cal*qty
+update()
+}
+
+function quickAdd(c){calories+=c;update()}
+
+function addWater(l){
+water+=l
+document.getElementById("water").innerText=water+" ל'"
+document.getElementById("waterbar").style.width=Math.min((water/2)*100,100)+"%"
+}
+
+function saveWeight(){
+let w=document.getElementById("weight").value
+if(!w)return
+weights.push(parseFloat(w))
+localStorage.setItem("weights",JSON.stringify(weights))
+drawChart()
+}
+
+function drawChart(){
+let svg=document.getElementById("chart")
+svg.innerHTML=""
+if(weights.length<2)return
+let max=Math.max(...weights)
+let min=Math.min(...weights)
+let range=max-min||1
+let w=svg.clientWidth
+let h=160
+let path=""
+weights.forEach((val,i)=>{
+let x=i*(w/(weights.length-1))
+let y=h-((val-min)/range)*h
+path+=(i==0?"M":"L")+x+" "+y+" "
+})
+let p=document.createElementNS("http://www.w3.org/2000/svg","path")
+p.setAttribute("d",path)
+p.setAttribute("stroke","green")
+p.setAttribute("fill","none")
+p.setAttribute("stroke-width","3")
+svg.appendChild(p)
+}
+
+drawChart()
+</script>
+
+</body>
+</html>
