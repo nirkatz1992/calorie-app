@@ -1,0 +1,132 @@
+
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>מעקב קלוריות v4</title>
+<style>
+body{font-family:-apple-system,BlinkMacSystemFont,Arial;background:#f4f7fb;margin:0;padding:14px;direction:rtl}
+.card{background:#fff;border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:0 6px 20px rgba(0,0,0,.08)}
+h1{margin:0 0 8px;font-size:26px}
+button{padding:12px;border:none;border-radius:12px;font-size:16px;font-weight:bold;cursor:pointer;background:#2563eb;color:white}
+select,input{padding:10px;border-radius:10px;border:1px solid #ddd;font-size:16px;width:100%}
+.row{display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px;margin-bottom:10px}
+.stat{font-size:22px;font-weight:bold}
+</style>
+</head>
+<body>
+
+<div class="card">
+<h1>מעקב קלוריות v4</h1>
+יעד קלוריות יומי:
+<input id="goal" type="number" value="1700">
+</div>
+
+<div class="card">
+<h2>הוסף מאכל</h2>
+<div class="row">
+<select id="food">
+<option value="180">שיבולת שועל (180)</option>
+<option value="80">לחם לבן פרוסה (80)</option>
+<option value="70">לחם מלא פרוסה (70)</option>
+<option value="170">פיתה (170)</option>
+<option value="300">לאפה (300)</option>
+<option value="200">חומוס (200)</option>
+<option value="90">טחינה כף (90)</option>
+<option value="95">טחינה גולמית כף (95)</option>
+<option value="120">אבוקדו חצי (120)</option>
+<option value="80">ביצה קשה (80)</option>
+<option value="90">ביצה מקושקשת (90)</option>
+<option value="100">גבינה צהובה פרוסה (100)</option>
+<option value="110">קוטג' 5% (110)</option>
+<option value="120">יוגורט טבעי (120)</option>
+<option value="140">יוגורט סויה (140)</option>
+<option value="120">גרנולה (120)</option>
+<option value="110">קורנפלקס (110)</option>
+<option value="100">בננה (100)</option>
+<option value="80">תפוח (80)</option>
+<option value="90">אגס (90)</option>
+<option value="70">תמר (70)</option>
+<option value="80">תפוז (80)</option>
+<option value="100">ענבים כוס (100)</option>
+<option value="100">שקדים חופן (100)</option>
+<option value="120">אגוזי מלך חופן (120)</option>
+<option value="150">בוטנים חופן (150)</option>
+<option value="200">אורז לבן (200)</option>
+<option value="210">אורז מלא (210)</option>
+<option value="220">קוסקוס (220)</option>
+<option value="230">פתיתים (230)</option>
+<option value="220">פסטה (220)</option>
+<option value="200">פירה (200)</option>
+<option value="350">צ'יפס (350)</option>
+<option value="160">תפוח אדמה אפוי (160)</option>
+<option value="180">עדשים (180)</option>
+<option value="170">חומוס מבושל (170)</option>
+<option value="180">שעועית (180)</option>
+<option value="160">טופו (160)</option>
+<option value="320">שניצל (320)</option>
+<option value="250">עוף (250)</option>
+<option value="220">דג (220)</option>
+<option value="300">קבב (300)</option>
+<option value="350">שווארמה (350)</option>
+<option value="50">סלט ירקות (50)</option>
+<option value="180">סלט יווני (180)</option>
+<option value="200">סלט טונה (200)</option>
+<option value="50">נס קפה עם חלב סויה (50)</option>
+<option value="5">קפה שחור (5)</option>
+<option value="40">קפה עם חלב (40)</option>
+<option value="60">קפה עם חלב וסוכר (60)</option>
+<option value="122">קינדר בואנו (122)</option>
+<option value="60">שוקולד קובייה (60)</option>
+<option value="90">עוגייה (90)</option>
+<option value="230">פרוסת עוגה בחושה (230)</option>
+<option value="300">בורקס גבינה (300)</option>
+<option value="280">בורקס תפוח אדמה (280)</option>
+<option value="320">קרואסון (320)</option>
+<option value="285">פיצה משולש (285)</option>
+</select>
+<input id="qty" type="number" value="1" step="0.5">
+<button onclick="addFood()">הוסף</button>
+</div>
+</div>
+
+<div class="card">
+סה״כ היום:
+<div id="total" class="stat">0</div>
+נשאר:
+<div id="remain" class="stat">1700</div>
+</div>
+
+<div class="card">
+<h2>רשימת היום</h2>
+<div id="list"></div>
+</div>
+
+<script>
+let total=0
+
+function addFood(){
+let food=document.getElementById("food")
+let cal=parseFloat(food.value)
+let name=food.options[food.selectedIndex].text
+let qty=parseFloat(document.getElementById("qty").value)||1
+let c=cal*qty
+total+=c
+
+let div=document.createElement("div")
+div.innerText=name+" x"+qty+" = "+Math.round(c)+" קלוריות"
+document.getElementById("list").appendChild(div)
+
+update()
+}
+
+function update(){
+let goal=parseFloat(document.getElementById("goal").value)||0
+document.getElementById("total").innerText=Math.round(total)
+document.getElementById("remain").innerText=Math.round(goal-total)
+}
+</script>
+
+</body>
+</html>
