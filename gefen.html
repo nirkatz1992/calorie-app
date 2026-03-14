@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#4f46e5">
+<title>האפליקציה של גפן</title>
+<style>
+:root{
+  --bg:#f6f7fb; --card:#ffffff; --text:#111827; --muted:#6b7280; --line:#e5e7eb;
+  --primary:#4f46e5; --primary-soft:#eef2ff; --green:#16a34a; --green-soft:#ecfdf5;
+  --amber:#d97706; --amber-soft:#fffbeb; --cyan:#0891b2; --cyan-soft:#ecfeff;
+  --red:#dc2626; --red-soft:#fef2f2; --shadow:0 10px 28px rgba(17,24,39,.08); --r:18px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+body{padding:14px}
+.app{max-width:1120px;margin:0 auto}
+.card{background:var(--card);border:1px solid rgba(17,24,39,.05);border-radius:var(--r);box-shadow:var(--shadow);padding:16px;margin-bottom:14px}
+h1{margin:0 0 6px;font-size:30px}
+h2{margin:0 0 10px;font-size:22px}
+.sub,.hint,.status{color:var(--muted);font-size:14px;line-height:1.45}
+.status{font-weight:700;min-height:22px;margin-top:8px}
+.grid{display:grid;gap:10px}
+.g2{grid-template-columns:1fr 1fr}
+.g3{grid-template-columns:1fr 1fr 1fr}
+.g4{grid-template-columns:1fr 1fr 1fr 1fr}
+.stat{border:1px solid var(--line);border-radius:16px;padding:12px;background:#fbfdff}
+.label{font-size:13px;color:var(--muted);margin-bottom:4px}
+.value{font-size:28px;font-weight:800}
+.ok{color:var(--green)} .bad{color:var(--red)} .warn{color:var(--amber)} .water{color:var(--cyan)}
+.pill{display:inline-block;padding:8px 12px;border-radius:999px;font-size:14px;font-weight:800}
+.pill.ok{background:var(--green-soft)} .pill.warn{background:var(--amber-soft)} .pill.bad{background:var(--red-soft)}
+.progress{height:14px;background:#e8eef7;border-radius:999px;overflow:hidden;margin-top:10px}
+.bar{height:100%;width:0%;transition:width .2s ease}
+.bar.cal{background:linear-gradient(90deg,#4f46e5,#818cf8)}
+.bar.water{background:linear-gradient(90deg,#06b6d4,#67e8f9)}
+input,select,button{width:100%;min-height:46px;font-size:16px;border-radius:14px}
+input,select{border:1px solid var(--line);background:#fff;color:var(--text);padding:10px 12px}
+button{border:none;cursor:pointer;font-weight:800;padding:11px 12px}
+.primary{background:var(--primary);color:#fff}
+.secondary{background:var(--primary-soft);color:#312e81}
+.danger{background:#fee2e2;color:#991b1b}
+.soft-green{background:var(--green-soft);color:#166534;border:1px solid #bbf7d0}
+.soft-amber{background:var(--amber-soft);color:#a16207;border:1px solid #fde68a}
+.soft-cyan{background:var(--cyan-soft);color:#0e7490;border:1px solid #bae6fd}
+.quickBtns,.waterBtns,.actionBtns{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.mealSection{border:1px solid var(--line);border-radius:16px;padding:14px;background:#fbfdff}
+.copyRow{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px}
+.copyRow h2{margin:0}
+.addRow{display:grid;grid-template-columns:1fr 1.35fr .75fr .9fr .85fr;gap:8px;align-items:center}
+.mealList{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.mealItem{display:grid;grid-template-columns:1.25fr .65fr .55fr .6fr .6fr .5fr;gap:8px;align-items:center;border:1px solid var(--line);border-radius:14px;padding:10px;background:#fff}
+.kcalBox{text-align:center;font-weight:800;border:1px solid var(--line);border-radius:12px;padding:10px;background:#fbfdff}
+.removeBtn{background:#fff;border:1px solid var(--line);color:#991b1b;font-size:18px}
+.miniList{display:flex;flex-wrap:wrap;gap:8px}
+.miniChip{background:var(--primary-soft);color:#312e81;border-radius:999px;padding:8px 12px;font-size:14px}
+.miniChip button{display:inline;border:none;background:none;color:#991b1b;font-size:14px;font-weight:800;min-height:auto;width:auto;padding:0 0 0 8px}
+.chartWrap{border:1px solid var(--line);border-radius:16px;background:#fbfdff;padding:10px}
+svg{width:100%;height:180px;display:block}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:10px 6px;border-bottom:1px solid var(--line);text-align:right}
+th{color:var(--muted)}
+.hero{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+@media (max-width:980px){
+  .g2,.g3,.g4,.quickBtns,.waterBtns,.actionBtns,.addRow,.mealItem{grid-template-columns:1fr}
+  .hero{display:block}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="card">
+    <div class="hero">
+      <div>
+        <h1>האפליקציה של גפן</h1>
+        <div class="sub">גרסה מלאה, מלוטשת ומעודכנת. שמרתי על הממשקים הטובים מהאפליקציה הקודמת, והוספתי יחידות מדידה חכמות לכל מאכל בלי לשבור את שאר המערכת.</div>
+      </div>
+      <div><div id="dayStatus" class="pill ok">יום מאוזן</div></div>
+    </div>
+    <div class="grid g4" style="margin-top:10px">
+      <div class="stat"><div class="label">תאריך</div><input id="dateInput" type="date"></div>
+      <div class="stat"><div class="label">יעד קלורי יומי</div><input id="goalInput" type="number" value="1700" min="1000" max="3500" step="10"></div>
+      <div class="stat"><div class="label">משקל בוקר</div><input id="weightInput" type="number" step="0.1" placeholder="לא חובה"></div>
+      <div class="stat"><div class="label">שעת שינה</div><input id="sleepTimeInput" type="time" value="22:30"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>סיכום היום</h2>
+    <div class="grid g4">
+      <div class="stat"><div class="label">סה״כ קלוריות</div><div id="totalCalories" class="value">0</div></div>
+      <div class="stat"><div class="label">נשאר / עבר</div><div id="remainingCalories" class="value ok">1700</div></div>
+      <div class="stat"><div class="label">מים</div><div id="waterValue" class="value water">0.0 ל׳</div></div>
+      <div class="stat"><div class="label">סטטוס</div><div id="simpleStatus" class="pill ok">מאוזן</div></div>
+    </div>
+    <div class="progress"><div id="calBar" class="bar cal"></div></div>
+    <div class="progress"><div id="waterBar" class="bar water"></div></div>
+    <div id="saveStatus" class="status"></div>
+  </div>
+
+  <div class="card">
+    <h2>כפתורים מהירים</h2>
+    <div class="quickBtns">
+      <button class="soft-green" id="quickTofuBtn">🟩 טופו</button>
+      <button class="soft-green" id="quickSoyProteinBtn">🥣 מעדן חלבון סויה</button>
+      <button class="soft-amber" id="quickBreadPlentyBtn">🍞 לחם + plenty</button>
+      <button class="soft-green" id="quickPitaBtn">🥙 פיתה</button>
+    </div>
+    <div class="quickBtns" style="margin-top:10px">
+      <button class="soft-green" id="quickMeatballsBtn">🍽 קציצות</button>
+      <button class="soft-green" id="quickRiceBtn">🍚 אורז</button>
+      <div></div><div></div>
+    </div>
+    <div class="hint" style="margin-top:10px">הכפתורים המהירים מתווספים אוטומטית לבוקר / צהריים / ערב לפי השעה שבה לחצת.</div>
+  </div>
+
+  <div class="grid g3">
+    <div class="card">
+      <div class="copyRow">
+        <h2>בוקר</h2>
+        <button class="secondary" onclick="copyMeal('breakfast')">העתק מאתמול</button>
+      </div>
+      <div class="mealSection">
+        <div class="addRow">
+          <input id="breakfastSearch" placeholder="חפש מאכל...">
+          <select id="breakfastFood"></select>
+          <select id="breakfastUnit"></select>
+          <input id="breakfastQty" type="number" value="1" min="0.5" step="0.5">
+          <input id="breakfastTime" type="time">
+        </div>
+        <div class="actionBtns" style="margin-top:8px;grid-template-columns:1fr 1fr 1fr 1fr">
+          <button id="addBreakfastBtn" class="primary">הוסף</button><div></div><div></div><div></div>
+        </div>
+        <div class="hint">יחידות המדידה מתחלפות לפי המאכל שנבחר.</div>
+        <div id="breakfastList" class="mealList"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="copyRow">
+        <h2>צהריים</h2>
+        <button class="secondary" onclick="copyMeal('lunch')">העתק מאתמול</button>
+      </div>
+      <div class="mealSection">
+        <div class="addRow">
+          <input id="lunchSearch" placeholder="חפש מאכל...">
+          <select id="lunchFood"></select>
+          <select id="lunchUnit"></select>
+          <input id="lunchQty" type="number" value="1" min="0.5" step="0.5">
+          <input id="lunchTime" type="time">
+        </div>
+        <div class="actionBtns" style="margin-top:8px;grid-template-columns:1fr 1fr 1fr 1fr">
+          <button id="addLunchBtn" class="primary">הוסף</button><div></div><div></div><div></div>
+        </div>
+        <div class="hint">החיפוש מוצא גם באמצע שם המאכל.</div>
+        <div id="lunchList" class="mealList"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="copyRow">
+        <h2>ערב / נשנושים</h2>
+        <button class="secondary" onclick="copyMeal('dinner')">העתק מאתמול</button>
+      </div>
+      <div class="mealSection">
+        <div class="addRow">
+          <input id="dinnerSearch" placeholder="חפש מאכל...">
+          <select id="dinnerFood"></select>
+          <select id="dinnerUnit"></select>
+          <input id="dinnerQty" type="number" value="1" min="0.5" step="0.5">
+          <input id="dinnerTime" type="time">
+        </div>
+        <div class="actionBtns" style="margin-top:8px;grid-template-columns:1fr 1fr 1fr 1fr">
+          <button id="addDinnerBtn" class="primary">הוסף</button><div></div><div></div><div></div>
+        </div>
+        <div class="hint">למשל: "אור", "פית", "טופ", "סויה".</div>
+        <div id="dinnerList" class="mealList"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>מאכלים אישיים</h2>
+    <div class="grid g4">
+      <input id="customFoodName" placeholder="שם מאכל">
+      <input id="customFoodCalories" type="number" placeholder="קלוריות ליחידה">
+      <input id="customFoodUnit" placeholder="יחידה (למשל: יחידה / כף / 100 גרם)" value="יחידה">
+      <button id="addCustomFoodBtn" class="primary">שמור מאכל אישי</button>
+    </div>
+    <div class="actionBtns" style="margin-top:10px">
+      <button id="searchCaloriesHeBtn" class="secondary">חפש קלוריות בעברית</button>
+      <button id="searchCaloriesEnBtn" class="secondary">חפש קלוריות באנגלית</button>
+      <button id="addFavoritesBtn" class="secondary">הוסף עוד נפוצים</button>
+      <button id="refreshFiltersBtn" class="secondary">רענן רשימות</button>
+    </div>
+    <div id="customFoodsList" class="miniList" style="margin-top:10px"></div>
+  </div>
+
+  <div class="grid g2">
+    <div class="card">
+      <h2>אזהרת זמן אכילה</h2>
+      <div id="lateEatingWarning" class="value warn" style="font-size:22px">בודק זמן...</div>
+      <div class="hint">ככלל, עדיף לאכול עד כ־3 שעות לפני השינה.</div>
+    </div>
+
+    <div class="card">
+      <h2>מים</h2>
+      <div class="grid g3">
+        <div class="stat"><div class="label">שתיתי</div><div id="waterDrank" class="value water">0.0 ל׳</div></div>
+        <div class="stat"><div class="label">נשאר ליעד</div><div id="waterLeft" class="value water">2.0 ל׳</div></div>
+        <div class="stat"><div class="label">יעד</div><div class="value water">2.0 ל׳</div></div>
+      </div>
+      <div class="waterBtns" style="margin-top:10px">
+        <button class="soft-cyan" data-water="0.5">+0.5 ל׳</button>
+        <button class="soft-cyan" data-water="1">+1.0 ל׳</button>
+        <button class="soft-cyan" data-water="-0.5">-0.5 ל׳</button>
+        <button id="resetWaterBtn" class="danger">איפוס מים</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid g2">
+    <div class="card">
+      <h2>דוח שבועי</h2>
+      <div class="grid g2">
+        <div class="stat"><div class="label">ממוצע קלוריות</div><div id="weeklyAvgCalories" class="value">-</div></div>
+        <div class="stat"><div class="label">ממוצע מים</div><div id="weeklyAvgWater" class="value water">-</div></div>
+        <div class="stat"><div class="label">ימים ביעד</div><div id="weeklyGoalDays" class="value ok">0</div></div>
+        <div class="stat"><div class="label">ימים עם מים ביעד</div><div id="weeklyWaterDays" class="value water">0</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>מסלול ירידה</h2>
+      <div class="grid g3">
+        <div class="stat"><div class="label">מגמת משקל</div><div id="weightTrend" class="pill warn">אין מספיק נתונים</div></div>
+        <div class="stat"><div class="label">ממוצע 7 ימים</div><div id="avg7Weight" class="value">-</div></div>
+        <div class="stat"><div class="label">שינוי מול 7 הימים הקודמים</div><div id="weeklyDelta" class="value">-</div></div>
+      </div>
+      <div class="chartWrap" style="margin-top:10px"><svg id="weightChart" viewBox="0 0 320 180" preserveAspectRatio="none"></svg></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>שמירה והיסטוריה</h2>
+    <div class="actionBtns">
+      <button id="saveBtn" class="primary">שמור עכשיו</button>
+      <button id="loadBtn" class="secondary">טען את התאריך</button>
+      <button id="clearDayBtn" class="danger">נקה את היום</button>
+      <button id="clearMealsBtn" class="secondary">נקה רק ארוחות</button>
+    </div>
+    <div class="actionBtns" style="margin-top:10px">
+      <button id="todayBtn" class="secondary">חזור להיום</button>
+      <div></div><div></div><div></div>
+    </div>
+    <table style="margin-top:12px">
+      <thead><tr><th>תאריך</th><th>קלוריות</th><th>מים</th><th>משקל</th></tr></thead>
+      <tbody id="historyBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+(() => {
+const FOODS = {
+  "טופו":{"100 גרם":160,"50 גרם":80,"קובייה":80},
+  "מעדן חלבון סויה":{"יחידה":120},
+  "פרוסת לחם עם כפית גבינה plenty":{"יחידה":110},
+  "פיתה":{"יחידה":170,"חצי פיתה":85},
+  "קציצות 250 קלוריות":{"יחידה":250},
+  "אורז לבן":{"כף":30,"100 גרם":130,"חצי כוס":100,"כוס":200},
+  "אורז מלא":{"כף":32,"100 גרם":135,"חצי כוס":105,"כוס":210},
+  "טמפה":{"100 גרם":190,"50 גרם":95},
+  "עדשים מבושלות":{"כף":18,"100 גרם":116,"חצי כוס":115,"כוס":180},
+  "חומוס מבושל":{"כף":20,"100 גרם":164,"חצי כוס":135,"כוס":170},
+  "שעועית":{"כף":18,"100 גרם":127,"חצי כוס":120,"כוס":180},
+  "אדממה":{"100 גרם":120,"חצי כוס":100,"כוס":190},
+  "לחם מלא":{"פרוסה":70,"2 פרוסות":140,"100 גרם":250},
+  "לחם מחמצת":{"פרוסה":90,"100 גרם":250},
+  "טחינה":{"כפית":30,"כף":90,"2 כפות":180},
+  "חמאת בוטנים":{"כפית":32,"כף":95},
+  "חומוס ממרח":{"כפית":25,"כף":70,"2 כפות":140},
+  "אבוקדו":{"רבע":60,"חצי":120,"100 גרם":160},
+  "סלט קצוץ":{"קערה קטנה":50,"קערה גדולה":80,"100 גרם":30},
+  "סלט ירקות גדול":{"קערה":80,"100 גרם":35},
+  "תפוח":{"יחידה":80,"100 גרם":52},
+  "בננה":{"יחידה":100,"100 גרם":89},
+  "אגס":{"יחידה":90,"100 גרם":57},
+  "תפוז":{"יחידה":80,"100 גרם":47},
+  "ענבים":{"כוס":100,"100 גרם":69},
+  "תמר":{"יחידה":25,"2 יחידות":50,"100 גרם":282},
+  "אגוזים":{"חופן":110,"100 גרם":600},
+  "שקדים":{"חופן":100,"100 גרם":579},
+  "פופקורן קטן":{"יחידה":160},
+  "קרקרים":{"4 יחידות":140,"יחידה":35},
+  "קינואה":{"100 גרם":120,"חצי כוס":110,"כוס":170},
+  "בורגול":{"100 גרם":83,"חצי כוס":90,"כוס":150},
+  "קוסקוס":{"100 גרם":112,"חצי כוס":110,"כוס":220},
+  "פסטה":{"100 גרם":158,"חצי כוס":110,"כוס":220},
+  "מרק ירקות":{"קערה":120,"כוס":90},
+  "מרק עדשים":{"קערה":180,"כוס":130},
+  "בטטה אפויה":{"100 גרם":90,"יחידה":180},
+  "תפוח אדמה אפוי":{"100 גרם":93,"יחידה":160},
+  "יוגורט סויה":{"יחידה":140,"100 גרם":70}
+};
+const FAVORITES = {
+  "פיתה קלה":{"יחידה":140},
+  "טורטייה":{"יחידה":170},
+  "גרנולה":{"100 גרם":450,"כף":55},
+  "שיבולת שועל":{"100 גרם":389,"כף":35,"חצי כוס":180}
+};
+const STORAGE_PREFIX = "gefen_app_v2_day_";
+const CUSTOM_KEY = "gefen_app_v2_custom_";
+const $ = id => document.getElementById(id);
+
+let customFoods = {};
+let waterLiters = 0;
+let meals = { breakfast: [], lunch: [], dinner: [] };
+
+function nowTime(){
+  const d = new Date();
+  return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");
+}
+function todayISO(){
+  const now = new Date();
+  const local = new Date(now.getTime()-now.getTimezoneOffset()*60000);
+  return local.toISOString().slice(0,10);
+}
+function dateOffsetISO(days){
+  const d = new Date();
+  d.setDate(d.getDate()+days);
+  const local = new Date(d.getTime()-d.getTimezoneOffset()*60000);
+  return local.toISOString().slice(0,10);
+}
+function sectionByCurrentTime(){
+  const d = new Date();
+  const h = d.getHours() + d.getMinutes()/60;
+  if (h < 11) return "breakfast";
+  if (h < 17) return "lunch";
+  return "dinner";
+}
+function allFoods(){
+  return {...FOODS, ...customFoods};
+}
+function foodNames(){
+  return Object.keys(allFoods()).sort((a,b)=>a.localeCompare(b,'he'));
+}
+function caloriesFor(food, unit){
+  const db = allFoods();
+  return db[food] && db[food][unit] ? Number(db[food][unit]) : 0;
+}
+function loadCustomFoods(){
+  try{ customFoods = JSON.parse(localStorage.getItem(CUSTOM_KEY) || "{}"); }
+  catch{ customFoods = {}; }
+}
+function saveCustomFoods(){
+  localStorage.setItem(CUSTOM_KEY, JSON.stringify(customFoods));
+  renderCustomFoods();
+  refreshAllSelectors();
+  autoSave();
+}
+function filteredNames(query){
+  const q = (query || "").trim().toLowerCase();
+  const names = foodNames();
+  if (!q) return names;
+  return names.filter(name => name.toLowerCase().includes(q));
+}
+function fillFoodSelect(selectId, searchId){
+  const sel = $(selectId);
+  const names = filteredNames($(searchId).value || "");
+  sel.innerHTML = "";
+  if (!names.length){
+    const op = document.createElement("option");
+    op.value = "";
+    op.textContent = "אין תוצאות";
+    sel.appendChild(op);
+    return;
+  }
+  names.forEach(name => {
+    const op = document.createElement("option");
+    op.value = name;
+    op.textContent = name;
+    sel.appendChild(op);
+  });
+}
+function fillUnitSelect(unitId, food){
+  const sel = $(unitId);
+  sel.innerHTML = "";
+  const db = allFoods();
+  const units = food && db[food] ? Object.keys(db[food]) : [];
+  if (!units.length){
+    const op = document.createElement("option");
+    op.value = "";
+    op.textContent = "אין יחידות";
+    sel.appendChild(op);
+    return;
+  }
+  units.forEach(unit => {
+    const op = document.createElement("option");
+    op.value = unit;
+    op.textContent = unit;
+    sel.appendChild(op);
+  });
+}
+function refreshAllSelectors(){
+  fillFoodSelect("breakfastFood","breakfastSearch");
+  fillFoodSelect("lunchFood","lunchSearch");
+  fillFoodSelect("dinnerFood","dinnerSearch");
+  fillUnitSelect("breakfastUnit",$("breakfastFood").value);
+  fillUnitSelect("lunchUnit",$("lunchFood").value);
+  fillUnitSelect("dinnerUnit",$("dinnerFood").value);
+}
+function renderCustomFoods(){
+  const box = $("customFoodsList");
+  box.innerHTML = "";
+  const names = Object.keys(customFoods);
+  if (!names.length){
+    box.innerHTML = '<span class="miniChip">עדיין אין מאכלים אישיים</span>';
+    return;
+  }
+  names.forEach(name => {
+    const firstUnit = Object.keys(customFoods[name])[0];
+    const firstCal = customFoods[name][firstUnit];
+    const chip = document.createElement("span");
+    chip.className = "miniChip";
+    chip.innerHTML = `${name} (${firstUnit}: ${firstCal}) <button type="button">×</button>`;
+    chip.querySelector("button").addEventListener("click",()=>{ delete customFoods[name]; saveCustomFoods(); });
+    box.appendChild(chip);
+  });
+}
+function addMeal(section, food, unit, qty, time){
+  if (!food || !unit) return;
+  meals[section].push({ food, unit, qty:Number(qty), time:time || nowTime() });
+  renderMeals();
+  recalc();
+  autoSave();
+}
+function quickAdd(food){
+  const units = Object.keys(allFoods()[food] || {});
+  if (!units.length) return;
+  addMeal(sectionByCurrentTime(), food, units[0], 1, nowTime());
+}
+function removeMeal(section, idx){
+  meals[section].splice(idx,1);
+  renderMeals();
+  recalc();
+  autoSave();
+}
+function renderSection(section, listId){
+  const list = $(listId);
+  list.innerHTML = "";
+  if (!meals[section].length){
+    list.innerHTML = '<div class="hint">עדיין לא נוספו פריטים</div>';
+    return;
+  }
+  meals[section].forEach((item, idx) => {
+    const cal = Math.round(caloriesFor(item.food, item.unit) * Number(item.qty || 0));
+    const row = document.createElement("div");
+    row.className = "mealItem";
+    row.innerHTML = `<div>${item.food}</div><div>${item.unit}</div><div>${item.qty}x</div><div>${item.time || "-"}</div><div class="kcalBox">${cal}</div><button class="removeBtn" type="button">×</button>`;
+    row.querySelector("button").addEventListener("click",()=>removeMeal(section, idx));
+    list.appendChild(row);
+  });
+}
+function renderMeals(){
+  renderSection("breakfast","breakfastList");
+  renderSection("lunch","lunchList");
+  renderSection("dinner","dinnerList");
+}
+function totalCaloriesValue(){
+  return ["breakfast","lunch","dinner"].reduce((sum,section)=> sum + meals[section].reduce((s,item)=> s + Math.round(caloriesFor(item.food,item.unit) * Number(item.qty || 0)), 0), 0);
+}
+function updateLateEatingWarning(){
+  const [sh,sm] = ($("sleepTimeInput").value || "22:30").split(":").map(Number);
+  const sleepHour = sh + sm/60;
+  const caution = sleepHour - 3;
+  const severe = sleepHour - 1.5;
+  const now = new Date();
+  const hour = now.getHours() + now.getMinutes()/60;
+  if (hour >= severe){
+    $("lateEatingWarning").textContent = "🔴 האוכל עכשיו קרוב מאוד לשינה.";
+    $("lateEatingWarning").className = "value bad";
+  } else if (hour >= caution){
+    $("lateEatingWarning").textContent = "🟡 זה זמן רגיש לפני שינה. עדיף ארוחה קלה.";
+    $("lateEatingWarning").className = "value warn";
+  } else {
+    $("lateEatingWarning").textContent = "🟢 זמן אכילה תקין ביחס לשעת השינה.";
+    $("lateEatingWarning").className = "value ok";
+  }
+}
+function updateDayStatus(total, remain){
+  let text = "יום מאוזן", cls = "pill ok";
+  if (remain < 0){ text = "מעל היעד"; cls = "pill bad"; }
+  else if (waterLiters < 2){ text = "חסר מים"; cls = "pill warn"; }
+  $("dayStatus").textContent = text;
+  $("dayStatus").className = cls;
+  $("simpleStatus").textContent = text;
+  $("simpleStatus").className = cls;
+}
+function recalc(){
+  const total = totalCaloriesValue();
+  const goal = Number($("goalInput").value || 1700);
+  const remain = goal - total;
+  $("totalCalories").textContent = String(total);
+  $("remainingCalories").textContent = String(remain);
+  $("remainingCalories").className = "value " + (remain >= 0 ? "ok" : "bad");
+  $("calBar").style.width = Math.min(goal > 0 ? (total/goal)*100 : 0, 100) + "%";
+  $("waterValue").textContent = waterLiters.toFixed(1) + " ל׳";
+  $("waterDrank").textContent = waterLiters.toFixed(1) + " ל׳";
+  $("waterLeft").textContent = Math.max(0, 2-waterLiters).toFixed(1) + " ל׳";
+  $("waterBar").style.width = Math.min((waterLiters/2)*100, 100) + "%";
+  updateLateEatingWarning();
+  updateDayStatus(total, remain);
+}
+function payload(){
+  return {
+    date:$("dateInput").value,
+    goal:Number($("goalInput").value || 1700),
+    weight:$("weightInput").value,
+    sleepTime:$("sleepTimeInput").value || "22:30",
+    water:waterLiters,
+    meals,
+    total:totalCaloriesValue()
+  };
+}
+function saveDay(manual=true){
+  try{
+    localStorage.setItem(STORAGE_PREFIX + $("dateInput").value, JSON.stringify(payload()));
+    renderHistory();
+    renderTrend();
+    renderWeeklyReport();
+    $("saveStatus").textContent = manual ? "נשמר בהצלחה." : "נשמר אוטומטית.";
+    $("saveStatus").className = "status ok";
+  }catch{
+    $("saveStatus").textContent = "השמירה נכשלה.";
+    $("saveStatus").className = "status bad";
+  }
+}
+function autoSave(){ saveDay(false); }
+function loadDay(){
+  const raw = localStorage.getItem(STORAGE_PREFIX + $("dateInput").value);
+  if (!raw){
+    $("saveStatus").textContent = "אין נתונים שמורים לתאריך הזה.";
+    $("saveStatus").className = "status warn";
+    return;
+  }
+  try{
+    const data = JSON.parse(raw);
+    $("goalInput").value = data.goal || 1700;
+    $("weightInput").value = data.weight || "";
+    $("sleepTimeInput").value = data.sleepTime || "22:30";
+    waterLiters = Number(data.water || 0);
+    meals = data.meals || { breakfast: [], lunch: [], dinner: [] };
+    renderMeals(); recalc(); renderHistory(); renderTrend(); renderWeeklyReport();
+    $("saveStatus").textContent = "הנתונים נטענו.";
+    $("saveStatus").className = "status ok";
+  }catch{
+    $("saveStatus").textContent = "הטעינה נכשלה.";
+    $("saveStatus").className = "status bad";
+  }
+}
+function clearDay(){
+  waterLiters = 0;
+  meals = { breakfast: [], lunch: [], dinner: [] };
+  $("weightInput").value = "";
+  $("goalInput").value = 1700;
+  $("sleepTimeInput").value = "22:30";
+  renderMeals(); recalc(); autoSave(); renderWeeklyReport();
+  $("saveStatus").textContent = "היום נוקה.";
+  $("saveStatus").className = "status ok";
+}
+function clearMealsOnly(){
+  meals = { breakfast: [], lunch: [], dinner: [] };
+  renderMeals(); recalc(); autoSave();
+  $("saveStatus").textContent = "הארוחות נוקו.";
+  $("saveStatus").className = "status ok";
+}
+function copyMeal(section){
+  const raw = localStorage.getItem(STORAGE_PREFIX + dateOffsetISO(-1));
+  if (!raw){
+    $("saveStatus").textContent = "אין נתונים מאתמול.";
+    $("saveStatus").className = "status warn";
+    return;
+  }
+  try{
+    const data = JSON.parse(raw);
+    if (!data.meals || !data.meals[section] || !data.meals[section].length){
+      $("saveStatus").textContent = "אין ארוחה מאתמול להעתיק.";
+      $("saveStatus").className = "status warn";
+      return;
+    }
+    meals[section] = JSON.parse(JSON.stringify(data.meals[section]));
+    renderMeals(); recalc(); autoSave();
+    $("saveStatus").textContent = "הארוחה מאתמול הועתקה.";
+    $("saveStatus").className = "status ok";
+  }catch{
+    $("saveStatus").textContent = "ההעתקה נכשלה.";
+    $("saveStatus").className = "status bad";
+  }
+}
+function addWater(delta){
+  waterLiters = Math.max(0, Math.round((waterLiters + delta) * 10) / 10);
+  recalc();
+  autoSave();
+}
+function addCustomFood(){
+  const name = $("customFoodName").value.trim();
+  const calories = Number($("customFoodCalories").value);
+  const unit = $("customFoodUnit").value.trim() || "יחידה";
+  if (!name || !calories || calories < 0){
+    $("saveStatus").textContent = "צריך למלא שם מאכל, קלוריות ויחידה תקינים.";
+    $("saveStatus").className = "status warn";
+    return;
+  }
+  if (allFoods()[name]){
+    $("saveStatus").textContent = "המאכל הזה כבר קיים.";
+    $("saveStatus").className = "status warn";
+    return;
+  }
+  customFoods[name] = { [unit]: calories };
+  $("customFoodName").value = "";
+  $("customFoodCalories").value = "";
+  $("customFoodUnit").value = "יחידה";
+  saveCustomFoods();
+  $("saveStatus").textContent = "המאכל האישי נשמר.";
+  $("saveStatus").className = "status ok";
+}
+function searchCalories(lang){
+  const q = $("customFoodName").value.trim();
+  if (!q){
+    $("saveStatus").textContent = "כתוב קודם שם מאכל.";
+    $("saveStatus").className = "status warn";
+    return;
+  }
+  const query = lang === "he" ? `קלוריות ${q}` : `${q} calories`;
+  window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}`,"_blank");
+}
+function addFavorites(){
+  let added = 0;
+  Object.keys(FAVORITES).forEach(name => {
+    if (!allFoods()[name]){
+      customFoods[name] = FAVORITES[name];
+      added += 1;
+    }
+  });
+  saveCustomFoods();
+  $("saveStatus").textContent = added ? `נוספו ${added} מאכלים.` : "המאכלים כבר קיימים.";
+  $("saveStatus").className = "status ok";
+}
+function allSaved(){
+  const items = [];
+  for (let i=0;i<localStorage.length;i++){
+    const k = localStorage.key(i);
+    if (k && k.startsWith(STORAGE_PREFIX)){
+      try{ items.push(JSON.parse(localStorage.getItem(k))); }catch{}
+    }
+  }
+  items.sort((a,b)=>(a.date || "").localeCompare(b.date || ""));
+  return items;
+}
+function renderHistory(){
+  const rows = allSaved().slice().reverse().slice(0,14);
+  $("historyBody").innerHTML = "";
+  if (!rows.length){
+    $("historyBody").innerHTML = "<tr><td colspan='4'>עדיין אין ימים שמורים</td></tr>";
+    return;
+  }
+  rows.forEach(item => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${item.date || ""}</td><td>${item.total || 0}</td><td>${Number(item.water || 0).toFixed(1)} ל׳</td><td>${item.weight || "-"}</td>`;
+    $("historyBody").appendChild(tr);
+  });
+}
+function avg(arr){ return arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : null; }
+function renderTrend(){
+  const days = allSaved().filter(x => x.weight !== "" && x.weight != null && !isNaN(Number(x.weight))).map(x => ({date:x.date, weight:Number(x.weight)}));
+  if (days.length < 2){
+    $("weightTrend").textContent = "אין מספיק נתונים";
+    $("weightTrend").className = "pill warn";
+    $("avg7Weight").textContent = "-";
+    $("weeklyDelta").textContent = "-";
+    drawChart([]);
+    return;
+  }
+  const last7 = days.slice(-7).map(x=>x.weight);
+  const prev7 = days.slice(-14,-7).map(x=>x.weight);
+  const avgLast7 = avg(last7);
+  $("avg7Weight").textContent = avgLast7 ? avgLast7.toFixed(1) : "-";
+  if (!prev7.length){
+    $("weeklyDelta").textContent = "עוד מוקדם";
+    $("weightTrend").textContent = "יש התחלה טובה";
+    $("weightTrend").className = "pill warn";
+  } else {
+    const change = avgLast7 - avg(prev7);
+    $("weeklyDelta").textContent = change.toFixed(1);
+    if (change <= -0.4 && change >= -0.7){ $("weightTrend").textContent = "במסלול טוב"; $("weightTrend").className = "pill ok"; }
+    else if (change < -0.7){ $("weightTrend").textContent = "ירידה מהירה"; $("weightTrend").className = "pill warn"; }
+    else if (change < 0){ $("weightTrend").textContent = "יש ירידה, קצת איטית"; $("weightTrend").className = "pill warn"; }
+    else { $("weightTrend").textContent = "אין ירידה כרגע"; $("weightTrend").className = "pill bad"; }
+  }
+  drawChart(days.slice(-14));
+}
+function drawChart(points){
+  const svg = $("weightChart");
+  svg.innerHTML = "";
+  const W=320,H=180,pad=18;
+  if (!points.length){
+    svg.innerHTML = '<text x="160" y="95" text-anchor="middle" fill="#94a3b8" font-size="14">אין עדיין מספיק נתוני משקל</text>';
+    return;
+  }
+  const weights = points.map(p=>p.weight);
+  const min = Math.min(...weights), max = Math.max(...weights), range = Math.max(max-min,1);
+  const x = i => pad + (i * ((W-pad*2)/Math.max(points.length-1,1)));
+  const y = w => H-pad - ((w-min)/range)*(H-pad*2);
+  for (let i=0;i<4;i++){
+    const gy = pad + i*((H-pad*2)/3);
+    const line = document.createElementNS("http://www.w3.org/2000/svg","line");
+    line.setAttribute("x1","0"); line.setAttribute("x2",String(W));
+    line.setAttribute("y1",String(gy)); line.setAttribute("y2",String(gy));
+    line.setAttribute("stroke","#e2e8f0"); line.setAttribute("stroke-width","1");
+    svg.appendChild(line);
+  }
+  let d = "";
+  points.forEach((p,i)=> d += `${i===0?"M":"L"} ${x(i)} ${y(p.weight)} `);
+  const path = document.createElementNS("http://www.w3.org/2000/svg","path");
+  path.setAttribute("d",d.trim());
+  path.setAttribute("fill","none");
+  path.setAttribute("stroke","#16a34a");
+  path.setAttribute("stroke-width","3");
+  path.setAttribute("stroke-linecap","round");
+  path.setAttribute("stroke-linejoin","round");
+  svg.appendChild(path);
+  points.forEach((p,i)=>{
+    const c = document.createElementNS("http://www.w3.org/2000/svg","circle");
+    c.setAttribute("cx",String(x(i)));
+    c.setAttribute("cy",String(y(p.weight)));
+    c.setAttribute("r","3.5");
+    c.setAttribute("fill","#16a34a");
+    svg.appendChild(c);
+  });
+}
+function renderWeeklyReport(){
+  const recent = allSaved().slice(-7);
+  if (!recent.length){
+    $("weeklyAvgCalories").textContent = "-";
+    $("weeklyAvgWater").textContent = "-";
+    $("weeklyGoalDays").textContent = "0";
+    $("weeklyWaterDays").textContent = "0";
+    return;
+  }
+  const avgCal = avg(recent.map(x=>Number(x.total||0)));
+  const avgWater = avg(recent.map(x=>Number(x.water||0)));
+  const goalDays = recent.filter(x=>Number(x.total||0)<=Number(x.goal||1700)).length;
+  const waterDays = recent.filter(x=>Number(x.water||0)>=2).length;
+  $("weeklyAvgCalories").textContent = avgCal ? Math.round(avgCal) : "-";
+  $("weeklyAvgWater").textContent = avgWater != null ? avgWater.toFixed(1) + " ל׳" : "-";
+  $("weeklyGoalDays").textContent = String(goalDays);
+  $("weeklyWaterDays").textContent = String(waterDays);
+}
+function initSelectors(){
+  refreshAllSelectors();
+  $("breakfastQty").value = "1";
+  $("lunchQty").value = "1";
+  $("dinnerQty").value = "1";
+  $("breakfastTime").value = nowTime();
+  $("lunchTime").value = nowTime();
+  $("dinnerTime").value = nowTime();
+}
+
+$("breakfastSearch").addEventListener("input",()=>{ fillFoodSelect("breakfastFood","breakfastSearch"); fillUnitSelect("breakfastUnit",$("breakfastFood").value); });
+$("lunchSearch").addEventListener("input",()=>{ fillFoodSelect("lunchFood","lunchSearch"); fillUnitSelect("lunchUnit",$("lunchFood").value); });
+$("dinnerSearch").addEventListener("input",()=>{ fillFoodSelect("dinnerFood","dinnerSearch"); fillUnitSelect("dinnerUnit",$("dinnerFood").value); });
+
+$("breakfastFood").addEventListener("change",e=>fillUnitSelect("breakfastUnit",e.target.value));
+$("lunchFood").addEventListener("change",e=>fillUnitSelect("lunchUnit",e.target.value));
+$("dinnerFood").addEventListener("change",e=>fillUnitSelect("dinnerUnit",e.target.value));
+
+$("addBreakfastBtn").addEventListener("click",()=>addMeal("breakfast",$("breakfastFood").value,$("breakfastUnit").value,$("breakfastQty").value,$("breakfastTime").value));
+$("addLunchBtn").addEventListener("click",()=>addMeal("lunch",$("lunchFood").value,$("lunchUnit").value,$("lunchQty").value,$("lunchTime").value));
+$("addDinnerBtn").addEventListener("click",()=>addMeal("dinner",$("dinnerFood").value,$("dinnerUnit").value,$("dinnerQty").value,$("dinnerTime").value));
+
+$("quickTofuBtn").addEventListener("click",()=>quickAdd("טופו"));
+$("quickSoyProteinBtn").addEventListener("click",()=>quickAdd("מעדן חלבון סויה"));
+$("quickBreadPlentyBtn").addEventListener("click",()=>quickAdd("פרוסת לחם עם כפית גבינה plenty"));
+$("quickPitaBtn").addEventListener("click",()=>quickAdd("פיתה"));
+$("quickMeatballsBtn").addEventListener("click",()=>quickAdd("קציצות 250 קלוריות"));
+$("quickRiceBtn").addEventListener("click",()=>quickAdd("אורז לבן"));
+
+document.querySelectorAll("[data-water]").forEach(btn=>btn.addEventListener("click",()=>addWater(Number(btn.dataset.water))));
+$("addCustomFoodBtn").addEventListener("click",addCustomFood);
+$("searchCaloriesHeBtn").addEventListener("click",()=>searchCalories("he"));
+$("searchCaloriesEnBtn").addEventListener("click",()=>searchCalories("en"));
+$("addFavoritesBtn").addEventListener("click",addFavorites);
+$("refreshFiltersBtn").addEventListener("click",refreshAllSelectors);
+
+$("saveBtn").addEventListener("click",()=>saveDay(true));
+$("loadBtn").addEventListener("click",loadDay);
+$("clearDayBtn").addEventListener("click",clearDay);
+$("clearMealsBtn").addEventListener("click",clearMealsOnly);
+$("todayBtn").addEventListener("click",()=>{
+  $("dateInput").value = todayISO();
+  const raw = localStorage.getItem(STORAGE_PREFIX + $("dateInput").value);
+  if (raw) loadDay();
+  else clearDay();
+});
+$("resetWaterBtn").addEventListener("click",()=>{ waterLiters = 0; recalc(); autoSave(); });
+
+["dateInput","goalInput","weightInput","sleepTimeInput"].forEach(id=>$(id).addEventListener("change",()=>{ recalc(); autoSave(); }));
+$("goalInput").addEventListener("input",()=>{ recalc(); autoSave(); });
+
+$("dateInput").addEventListener("change",()=>{
+  const raw = localStorage.getItem(STORAGE_PREFIX + $("dateInput").value);
+  if (raw) loadDay();
+  else{
+    meals = { breakfast: [], lunch: [], dinner: [] };
+    waterLiters = 0;
+    $("weightInput").value = "";
+    renderMeals(); recalc(); renderWeeklyReport();
+    $("saveStatus").textContent = "תאריך חדש. אפשר להתחיל למלא.";
+    $("saveStatus").className = "status warn";
+  }
+});
+
+function init(){
+  loadCustomFoods();
+  initSelectors();
+  renderCustomFoods();
+  $("dateInput").value = todayISO();
+  const raw = localStorage.getItem(STORAGE_PREFIX + $("dateInput").value);
+  if (raw) loadDay();
+  else{
+    renderMeals();
+    recalc();
+    renderHistory();
+    renderTrend();
+    renderWeeklyReport();
+  }
+}
+init();
+})();
+</script>
+</body>
+</html>
